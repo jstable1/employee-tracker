@@ -55,7 +55,8 @@ const viewAllDepts = () => {
 };
 
 const viewAllRoles = () => {
-    const sql = `SELECT roles.id, roles.title, roles.salary, departments.name AS department FROM roles LEFT JOIN departments on roles.department_id = departments.id`;
+    const sql = `SELECT roles.id, roles.title, roles.salary, 
+    departments.name AS department FROM roles LEFT JOIN departments ON roles.department_id = departments.id`;
     db.query(sql, (err, rows) => {
         if (err) {
             return;
@@ -66,7 +67,11 @@ const viewAllRoles = () => {
 };
 
 const viewAllEmployees = () => {
-    const sql = `SELECT * FROM employees`;
+    const sql = `SELECT employee.id, employee.first_name, employee.last_name, 
+    roles.title AS role, 
+    CONCAT(manager.first_name, ' ', manager.last_name) AS manager_name FROM employees employee
+    LEFT JOIN roles ON employee.role_id = roles.id 
+    LEFT JOIN employees manager ON manager.id = employee.manager_id;`;
     db.query(sql, (err, rows) => {
         if (err) {
             return;
@@ -159,17 +164,32 @@ const addEmployee = () => {
 };
 
 const updateEmployee = () => {
-    const sql = `SELECT * FROM employees`;
-    db.query(sql, (err, rows) => {
-        if (err) {
-            return;
-        }
-        console.table(['first_name last_name'], values);
+    const sql = `SELECT first_name, last_name FROM employees`;
+    const sql2 = `SELECT * FROM employees WHERE first_name = ? last_name = ?`;
+    const sql3 = `UPDATE employee SET role_id = ? WHERE employee_id = ?`;
+
+    inquirer.prompt([
+        {
+            type: 'list',
+            name: 'employeeMenu',
+            message: "Which employee's role do you want to update?",
+            choices: [
+                db.query(sql, (err, rows) => {
+                    if (err) {
+                        return;
+                    }
+                    console.table(rows);
+                    })
+            ],
+        },
+    ]) .then (answers => {
+        sql2() 
+        sql3()
         createMenu()
-        });
+    });
 }
 
-// update employee and set role id ? where id = ?
+
 
 createMenu()
 
