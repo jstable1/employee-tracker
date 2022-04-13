@@ -1,6 +1,6 @@
 const db = require('./config/connection');
 const inquirer = require('inquirer');
-const cTable = require('console.table');
+require('console.table');
 
 const createMenu = () =>
     inquirer.prompt([
@@ -39,7 +39,7 @@ const createMenu = () =>
                 return addEmployee();
             
             case 'Update an employee role':
-                return updateEmployee();
+                return showEmployeeRole();
         }
     });
 
@@ -149,7 +149,7 @@ const addEmployee = () => {
         {
             type: 'text',
             name: 'manager_id',
-            message: "What is the employee's manager?"
+            message: "Who is the employee's manager?"
         }
     ]) .then (answers => {
         const sql = `INSERT INTO employees SET ?`
@@ -163,31 +163,60 @@ const addEmployee = () => {
     })
 };
 
-const updateEmployee = () => {
-    const sql = `SELECT first_name, last_name FROM employees`;
-    const sql2 = `SELECT * FROM employees WHERE first_name = ? last_name = ?`;
-    const sql3 = `UPDATE employee SET role_id = ? WHERE employee_id = ?`;
-
+const updateEmployee = (roles) => {
+    const sql = `SELECT * FROM employees`
+        db.query(sql, (err, rows) => {
+            if (err) {
+                return;
+            }
+           console.log(rows) 
+    const showEmployees =                         
+        rows.map(({ id, first_name, last_name }) => ({
+        name: `${first_name} ${last_name}`,
+        value: id
+        }))
     inquirer.prompt([
         {
             type: 'list',
-            name: 'employeeMenu',
-            message: "Which employee's role do you want to update?",
-            choices: [
-                db.query(sql, (err, rows) => {
-                    if (err) {
-                        return;
-                    }
-                    console.table(rows);
-                    })
-            ],
+            message: 'What would you like to do?',
+            choices: showEmployees,
+            name: 'employee'
+        },
+        {
+            type: 'list',
+            message: 'What would you like to update the role too?',
+            choices: roles,
+            name: 'role'
         },
     ]) .then (answers => {
-        sql2() 
-        sql3()
-        createMenu()
-    });
+        var updateRole = `UPDATE employees SET role_id = ? WHERE id = ?`
+        db.query(updateRole, [answers.role, answers.employee], (err, rows) => {
+            if (err) {
+                return;
+            }
+           console.log('Updated Employee!!!')
+           createMenu()
+        })
+    })
+    })
 }
+
+const showEmployeeRole = () => {
+    const sql = `SELECT * FROM roles`
+        db.query(sql, (err, rows) => {
+            if (err) {
+                return;
+            }
+           console.log(rows) 
+    const showRole =                         
+        rows.map(({ id, title }) => ({
+        name: `${title}`,
+        value: id
+        }))
+        updateEmployee(showRole)
+    })
+}
+
 
 
 
