@@ -113,7 +113,7 @@ const addRole = () => {
             message: 'What is the salary of the role?',
         },
         {
-            type: 'text',
+            type: 'number',
             name: 'department_id',
             message: 'Which department does the role belong to?',
         }
@@ -142,16 +142,17 @@ const addEmployee = () => {
             message: "What is the employee's last name?"
         },
         {
-            type: 'text',
+            type: 'number',
             name: 'role_id',
             message: "What is the employee's role?"
         },
         {
-            type: 'text',
+            type: 'number',
             name: 'manager_id',
             message: "Who is the employee's manager?"
         }
     ]) .then (answers => {
+        console.log(answers)
         const sql = `INSERT INTO employees SET ?`
         db.query(sql, answers, (err, rows) => {
             if (err) {
